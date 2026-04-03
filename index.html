@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sản phẩm Bagisto - Vũ Minh Thành</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background-color: #f0f2f5; }
+        .header { background: #0aaa5a; color: white; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .card h3 { color: #0aaa5a; margin-top: 0; font-size: 1.2rem; }
+        .card .price { font-size: 1.3rem; color: #d93025; font-weight: bold; margin: 15px 0; }
+        .badge { background: #e8f0fe; color: #1967d2; padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Hệ thống Headless Commerce</h2>
+        <p>Sinh viên thực hiện: <b>Vũ Minh Thành</b></p>
+    </div>
+
+    <div class="product-grid" id="product-list">
+        <p>Đang tải dữ liệu từ GraphQL API...</p>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/graphql';
+        
+        const ACCESS_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvZ3JhcGhxbCIsImlhdCI6MTc3NTIyMDQ5NSwiZXhwIjoxODA2NzU2NDk1LCJuYmYiOjE3NzUyMjA0OTUsImp0aSI6ImhLbGpoZWE2RUtjUHlDc2siLCJzdWIiOiIxIiwicHJ2IjoiZGJhMjRmYmQ5OWI2MWE1MGUxYWU4ODU3NGJmMmQwZTI3M2FkZmU4NyJ9.7PNt3ziXIjCFo8kmIctsgm1oTP4MT8emHA3AEBBwOlM'; 
+
+        const query = `
+            query {
+                products {
+                    data {
+                        id
+                        name
+                        price
+                    }
+                }
+            }
+        `;
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + ACCESS_TOKEN
+            },
+            body: JSON.stringify({ query: query })
+        })
+        .then(res => res.json())
+        .then(response => {
+            const products = response.data.products.data;
+            let html = '';
+            
+            products.forEach(p => {
+                html += `
+                    <div class="card">
+                        <span class="badge">ID: ${p.id}</span>
+                        <h3>${p.name}</h3>
+                        <p class="price">${new Intl.NumberFormat('vi-VN').format(p.price)} đ</p>
+                        <p style="color:#666; font-size:0.9rem">Sản phẩm lấy từ Bagisto Headless API</p>
+                    </div>
+                `;
+            });
+            document.getElementById('product-list').innerHTML = html;
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('product-list').innerHTML = '<p style="color:red">Lỗi kết nối API. Hãy kiểm tra Token hoặc Bagisto Server!</p>';
+        });
+    </script>
+</body>
+</html>
